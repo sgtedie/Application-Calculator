@@ -319,6 +319,9 @@
           <option value="purogenepro">Purogene Pro</option>
           <option value="purogene2">Purogene 2%</option>
           <option value="perox">Perox Ag</option>
+          <option value="cipc">CIPC</option>
+          <option value="amplify">Amplify</option>
+          <option value="freshpack100">Fresh Pack 100</option>
         </select>
       </div>
 
@@ -538,6 +541,44 @@ const PRODUCTS = {
       { label: 'Triple', rate: 17.5 },
       { label: 'Chaser', rate: 4 },
     ]
+  },
+  cipc: {
+    name: 'CIPC',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 1,000', divisor: 1000 },
+      { label: '1 : 600',  divisor: 600  },
+      { label: '1 : 500',  divisor: 500  },
+      { label: '1 : 450',  divisor: 450  },
+      { label: '1 : 400',  divisor: 400  },
+    ]
+  },
+  amplify: {
+    name: 'Amplify',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 1,200', divisor: 1200 },
+      { label: '1 : 900',  divisor: 900  },
+      { label: '1 : 600',  divisor: 600  },
+    ]
+  },
+  freshpack100: {
+    name: 'Fresh Pack 100',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 14,000', divisor: 14000 },
+      { label: '1 : 1,500',  divisor: 1500  },
+      { label: '1 : 1,400',  divisor: 1400  },
+      { label: '1 : 1,200',  divisor: 1200  },
+      { label: '1 : 1,000',  divisor: 1000  },
+      { label: '1 : 600',   divisor: 600   },
+    ]
   }
 };
 
@@ -603,6 +644,22 @@ function onProductChange() {
     return;
   }
 
+  if (p.type === 'cwt_divide') {
+    rateSelect.innerHTML = '';
+    p.rates.forEach((r, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = r.label;
+      rateSelect.appendChild(opt);
+    });
+    rateLabel.textContent = 'Application Rate';
+    rateField.style.display = 'block';
+    labelRateField.style.display = 'none';
+    cwtField.style.display = 'block';
+    document.getElementById('cwt-label').textContent = 'CWT to Treat';
+    return;
+  }
+
   // Build rate dropdown
   rateSelect.innerHTML = '';
   p.rates.forEach((r, i) => {
@@ -638,6 +695,18 @@ function calculateChemical() {
     return;
   }
 
+  if (p.type === 'cwt_divide') {
+    const rateIdx3 = parseInt(document.getElementById('rate-select').value);
+    const rateObj3 = p.rates[rateIdx3];
+    const lbs = cwt / rateObj3.divisor;
+    document.querySelector('.result-label').textContent = 'Lbs Needed';
+    document.querySelector('.result-unit').textContent = 'lbs';
+    document.getElementById('res-gallons').textContent = lbs.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    document.getElementById('res-extra').innerHTML = '';
+    resultCard.classList.add('visible');
+    return;
+  }
+
   const rateIdx = parseInt(document.getElementById('rate-select').value);
   const rateObj = p.rates[rateIdx];
 
@@ -659,6 +728,8 @@ function calculateChemical() {
     `;
   }
 
+  document.querySelector('.result-label').textContent = 'Gallons Needed';
+  document.querySelector('.result-unit').textContent = 'gallons';
   document.getElementById('res-gallons').textContent = fmt(gallons);
   document.getElementById('res-extra').innerHTML = extraRows;
   resultCard.classList.add('visible');
