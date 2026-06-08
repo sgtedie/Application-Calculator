@@ -297,6 +297,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('chemical')">Product Calculator</button>
     <button class="tab-btn" onclick="switchTab('stadium')">Archive/Stadium</button>
+    <button class="tab-btn" onclick="switchTab('oxiphos')">Phos Acid</button>
   </div>
 </header>
 
@@ -441,6 +442,108 @@
     </div>
 
   </div>
+
+  <!-- ====== OXIPHOS TAB ====== -->
+  <div class="tab-panel" id="tab-oxiphos">
+
+    <!-- SECTION 1: Gallons Needed -->
+    <div class="card">
+      <div class="card-label">Gallons Needed</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Recommended rate: 12.8 oz/ton &nbsp;|&nbsp; 1 tote = 275 gal = 35,200 oz</p>
+
+      <div class="field">
+        <label>CWT to Treat</label>
+        <input type="number" id="ox-cwt" placeholder="e.g. 120000" inputmode="numeric" oninput="calcOxiphos()">
+      </div>
+      <div class="field">
+        <label>Rate (oz / ton)</label>
+        <input type="number" id="ox-rate1" value="12.8" inputmode="decimal" step="0.1" oninput="calcOxiphos()">
+      </div>
+
+      <div id="ox-res1" style="display:none;margin-top:4px;">
+        <div style="background:var(--surface2);border-radius:10px;padding:14px 16px;border:1px solid #c8860022;margin-bottom:8px;">
+          <div style="font-size:11px;color:#c88600;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Calculated</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-muted);">Gallons of Product</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);" id="ox-gal1">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--text-muted);">Totes (÷ 275)</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);" id="ox-totes1">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Reverse Calc -->
+    <div class="card">
+      <div class="card-label">CWT Treated from Gallons Used</div>
+
+      <div class="field">
+        <label>Gallons of Product Used</label>
+        <input type="number" id="ox-gal-used" placeholder="e.g. 900" inputmode="numeric" oninput="calcOxReverse()">
+      </div>
+      <div class="field">
+        <label>Rate (oz / ton)</label>
+        <input type="number" id="ox-rate2" value="12.8" inputmode="decimal" step="0.1" oninput="calcOxReverse()">
+      </div>
+
+      <div id="ox-res2" style="display:none;margin-top:4px;">
+        <div style="background:var(--surface2);border-radius:10px;padding:14px 16px;border:1px solid #c8860022;">
+          <div style="font-size:11px;color:#c88600;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Calculated</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-muted);">Totes Used</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);" id="ox-totes2">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-muted);">CWT Treated</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);" id="ox-cwt2">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--text-muted);">Tons Treated</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);" id="ox-tons2">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Pump Rate -->
+    <div class="card">
+      <div class="card-label">Pump Rate</div>
+
+      <div class="two-col">
+        <div class="field">
+          <label>Unload Time (min)</label>
+          <input type="number" id="ox-time" placeholder="30" inputmode="numeric" oninput="calcOxPump()">
+        </div>
+        <div class="field">
+          <label>CWT / Truck</label>
+          <input type="number" id="ox-cwt-truck" placeholder="700" inputmode="numeric" oninput="calcOxPump()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Rate (oz / ton)</label>
+        <input type="number" id="ox-rate3" value="12.8" inputmode="decimal" step="0.1" oninput="calcOxPump()">
+      </div>
+
+      <div id="ox-res3" style="display:none;margin-top:4px;">
+        <div style="background:var(--surface2);border-radius:10px;padding:14px 16px;border:1px solid #c8860022;">
+          <div style="font-size:11px;color:#c88600;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Calculated</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-muted);">Pump Rate</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);" id="ox-pump-gph">—</span>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);text-align:right;margin-top:-6px;margin-bottom:10px;">gal / hour</div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;">
+            <span style="font-size:13px;color:var(--text-muted);">% of 18 gal/hr max</span>
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);" id="ox-pump-pct">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
 </main>
 
 <script>
@@ -586,10 +689,15 @@ const PRODUCTS = {
 
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
-    b.classList.toggle('active', (i === 0 && tab==='chemical') || (i===1 && tab==='stadium'));
+    b.classList.toggle('active',
+      (i === 0 && tab==='chemical') ||
+      (i === 1 && tab==='stadium') ||
+      (i === 2 && tab==='oxiphos')
+    );
   });
   document.getElementById('tab-chemical').classList.toggle('active', tab==='chemical');
   document.getElementById('tab-stadium').classList.toggle('active', tab==='stadium');
+  document.getElementById('tab-oxiphos').classList.toggle('active', tab==='oxiphos');
 }
 
 function showError(id, msg) {
@@ -802,6 +910,56 @@ function calculateStadium() {
 
   resultCard.classList.add('visible');
 }
+
+// ── OXIPHOS CALCULATOR ─────────────────────────────────────────────────────────
+
+function fmtOx(n, dec) {
+  if (isNaN(n) || !isFinite(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function calcOxiphos() {
+  const cwt   = parseFloat(document.getElementById('ox-cwt').value);
+  const rate  = parseFloat(document.getElementById('ox-rate1').value);
+  const res   = document.getElementById('ox-res1');
+  if (!cwt || !rate || cwt <= 0 || rate <= 0) { res.style.display = 'none'; return; }
+  // gallons = cwt * rate(oz/ton) * (1/20) * (1/128)
+  const gal   = cwt * rate * (1/20) * (1/128);
+  const totes = gal / 275;
+  document.getElementById('ox-gal1').textContent   = fmtOx(gal, 1) + ' gal';
+  document.getElementById('ox-totes1').textContent = fmtOx(totes, 2) + ' totes';
+  res.style.display = 'block';
+}
+
+function calcOxReverse() {
+  const gal   = parseFloat(document.getElementById('ox-gal-used').value);
+  const rate  = parseFloat(document.getElementById('ox-rate2').value);
+  const res   = document.getElementById('ox-res2');
+  if (!gal || !rate || gal <= 0 || rate <= 0) { res.style.display = 'none'; return; }
+  const totes = gal / 275;
+  // cwt = gallons * 128 * (1/rate) * 20
+  const cwt   = gal * 128 * (1/rate) * 20;
+  const tons  = cwt / 20;
+  document.getElementById('ox-totes2').textContent = fmtOx(totes, 2) + ' totes';
+  document.getElementById('ox-cwt2').textContent   = fmtOx(cwt, 0) + ' cwt';
+  document.getElementById('ox-tons2').textContent  = fmtOx(tons, 0) + ' tons';
+  res.style.display = 'block';
+}
+
+function calcOxPump() {
+  const time  = parseFloat(document.getElementById('ox-time').value);
+  const cwt   = parseFloat(document.getElementById('ox-cwt-truck').value);
+  const rate  = parseFloat(document.getElementById('ox-rate3').value);
+  const res   = document.getElementById('ox-res3');
+  if (!time || !cwt || !rate || time <= 0 || cwt <= 0 || rate <= 0) { res.style.display = 'none'; return; }
+  // pump rate (gal/hr) = cwt * (1/time_min) * 60 * (1/20) * rate * (1/128)
+  const pumpGph = cwt * (1/time) * 60 * (1/20) * rate * (1/128);
+  const pumpPct = (pumpGph / 18) * 100;
+  document.getElementById('ox-pump-gph').textContent = fmtOx(pumpGph, 2) + ' gal/hr';
+  document.getElementById('ox-pump-pct').textContent = fmtOx(pumpPct, 1) + '%';
+  res.style.display = 'block';
+}
+
 </script>
 </body>
 </html>
