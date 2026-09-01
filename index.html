@@ -643,6 +643,7 @@ const PRODUCTS = {
       { label: 'Double', rate: 12 },
       { label: 'Triple', rate: 17.5 },
       { label: 'Chaser', rate: 4 },
+      { label: 'Disinfect', rate: 3 },
     ]
   },
   cipc: {
@@ -846,7 +847,7 @@ function calculateChemical() {
 function calculatePerox(cwt, rateObj) {
   const BULK_DENSITY = 40; // lbs/ft³
   // From sheet: ft³ = CWT * (100/bulkDensity) * 1.3
-  const ft3 = cwt * (100 / BULK_DENSITY) * 1.3;
+  const ft3 = cwt * (100 / BULK_DENSITY) * 1.13;
 
   // rate is fl oz per 1,000 ft³
   const totalFlOz = rateObj.rate * (ft3 / 1000);
