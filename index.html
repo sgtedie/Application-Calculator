@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Applied Product Calculator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='15' fill='%2300c896'/><rect x='18' y='14' width='64' height='72' rx='6' fill='%230f1114'/><rect x='26' y='22' width='48' height='18' rx='3' fill='%2300c896'/><rect x='26' y='48' width='12' height='10' rx='2' fill='%23fff'/><rect x='44' y='48' width='12' height='10' rx='2' fill='%23fff'/><rect x='62' y='48' width='12' height='10' rx='2' fill='%23fff'/><rect x='26' y='64' width='12' height='10' rx='2' fill='%23fff'/><rect x='44' y='64' width='12' height='10' rx='2' fill='%23fff'/><rect x='62' y='64' width='12' height='10' rx='2' fill='%2300c896'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -282,6 +283,33 @@
 
   /* Perox extra rows */
   .perox-results { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+  .unit-toggle {
+    display: flex;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+    align-self: center;
+  }
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active {
+    background: var(--accent);
+    color: #0f1114;
+  }
 </style>
 </head>
 <body>
@@ -289,9 +317,13 @@
 <header>
   <div class="header-top">
     <div class="logo-mark">CA</div>
-    <div>
+    <div style="flex:1">
       <div class="header-title">Applied Product Calculator</div>
       <div class="header-sub">Rate & Application Tool</div>
+    </div>
+    <div class="unit-toggle">
+      <button class="toggle-btn active" id="btn-cwt" onclick="setUnit('cwt')">CWT</button>
+      <button class="toggle-btn" id="btn-tons" onclick="setUnit('tons')">Tons</button>
     </div>
   </div>
   <div class="tabs">
@@ -351,7 +383,7 @@
     <div class="result-card" id="chem-result">
       <div class="result-label">Gallons Needed</div>
       <div class="result-primary" id="res-gallons">—</div>
-      <div class="result-unit">gallons</div>
+      <div class="result-unit" id="res-unit">gallons</div>
       <div class="result-rows" id="res-extra"></div>
     </div>
 
@@ -392,7 +424,7 @@
           <input type="number" id="st-unload-min" placeholder="15" inputmode="numeric" oninput="calcUnloadRate()">
         </div>
         <div class="field">
-          <label>CWT / Truck</label>
+          <label id="stad-cwt-truck-label">CWT / Truck</label>
           <input type="number" id="st-cwt-truck" placeholder="700" inputmode="numeric" oninput="calcUnloadRate()">
         </div>
       </div>
@@ -409,6 +441,29 @@
     <div class="error-msg" id="stad-error"></div>
 
     <button class="calc-btn" onclick="calculateStadium()">Calculate</button>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-label">Gallons Needed by CWT / Tons</div>
+      <div class="field">
+        <label>Product Rate</label>
+        <select id="quick-rate">
+          <option value="0.6">Archive — 0.6 oz/ton</option>
+          <option value="1">Stadium — 1 oz/ton</option>
+        </select>
+      </div>
+      <div class="field">
+        <label id="quick-cwt-label">CWT to Treat</label>
+        <input type="number" id="quick-cwt" placeholder="e.g. 50000" inputmode="numeric">
+      </div>
+      <button class="calc-btn" onclick="calculateQuick()">Calculate</button>
+      <div class="error-msg" id="quick-error"></div>
+      <div class="result-card" id="quick-result" style="margin-top:16px">
+        <div class="result-label">Gallons Needed</div>
+        <div class="result-primary" id="quick-res-gallons">—</div>
+        <div class="result-unit" id="res-unit">gallons</div>
+        <div class="result-rows" id="quick-res-extra"></div>
+      </div>
+    </div>
 
     <div class="result-card" id="stad-result" style="margin-top:16px">
       <div class="result-label">Stadium Results</div>
@@ -452,7 +507,7 @@
       <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Recommended rate: 12.8 oz/ton &nbsp;|&nbsp; 1 tote = 275 gal = 35,200 oz</p>
 
       <div class="field">
-        <label>CWT to Treat</label>
+        <label id="ox-cwt-label">CWT to Treat</label>
         <input type="number" id="ox-cwt" placeholder="e.g. 120000" inputmode="numeric" oninput="calcOxiphos()">
       </div>
       <div class="field">
@@ -477,7 +532,7 @@
 
     <!-- SECTION 2: Reverse Calc -->
     <div class="card">
-      <div class="card-label">CWT Treated from Gallons Used</div>
+      <div class="card-label" id="ox-cwt-reverse-label">CWT Treated from Gallons Used</div>
 
       <div class="field">
         <label>Gallons of Product Used</label>
@@ -496,7 +551,7 @@
             <span style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);" id="ox-totes2">—</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
-            <span style="font-size:13px;color:var(--text-muted);">CWT Treated</span>
+            <span style="font-size:13px;color:var(--text-muted);" id="ox-cwt-result-label">CWT Treated</span>
             <span style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;color:var(--accent2);" id="ox-cwt2">—</span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:baseline;">
@@ -517,7 +572,7 @@
           <input type="number" id="ox-time" placeholder="30" inputmode="numeric" oninput="calcOxPump()">
         </div>
         <div class="field">
-          <label>CWT / Truck</label>
+          <label id="stad-cwt-truck-label">CWT / Truck</label>
           <input type="number" id="ox-cwt-truck" placeholder="700" inputmode="numeric" oninput="calcOxPump()">
         </div>
       </div>
@@ -735,7 +790,7 @@ function onProductChange() {
     return;
   }
 
-  const p = PRODUCTS[pid];
+  const p = getActiveProducts()[pid];
 
   if (p.type === 'perox') {
     rateSelect.innerHTML = '';
@@ -749,7 +804,7 @@ function onProductChange() {
     rateField.style.display = 'block';
     labelRateField.style.display = 'none';
     cwtField.style.display = 'block';
-    document.getElementById('cwt-label').textContent = 'CWT to Treat';
+    document.getElementById('cwt-label').textContent = window.currentUnit === 'tons' ? 'Tons to Treat' : 'CWT to Treat';
     return;
   }
 
@@ -765,7 +820,7 @@ function onProductChange() {
     rateField.style.display = 'block';
     labelRateField.style.display = 'none';
     cwtField.style.display = 'block';
-    document.getElementById('cwt-label').textContent = 'CWT to Treat';
+    document.getElementById('cwt-label').textContent = window.currentUnit === 'tons' ? 'Tons to Treat' : 'CWT to Treat';
     return;
   }
 
@@ -782,7 +837,7 @@ function onProductChange() {
   rateField.style.display = 'block';
   labelRateField.style.display = 'none';
   cwtField.style.display = 'block';
-  document.getElementById('cwt-label').textContent = 'CWT to Treat';
+  document.getElementById('cwt-label').textContent = window.currentUnit === 'tons' ? 'Tons to Treat' : 'CWT to Treat';
 }
 
 function calculateChemical() {
@@ -793,9 +848,20 @@ function calculateChemical() {
   const pid = document.getElementById('product').value;
   if (!pid) { showError('chem-error', 'Please select a product.'); return; }
 
-  const p = PRODUCTS[pid];
-  const cwt = parseFloat(document.getElementById('cwt-input').value);
-  if (!cwt || cwt <= 0) { showError('chem-error', 'Enter a valid CWT amount.'); return; }
+  const p = getActiveProducts()[pid];
+  const inputVal = parseFloat(document.getElementById('cwt-input').value);
+  const unit = window.currentUnit || 'cwt';
+  if (!inputVal || inputVal <= 0) { showError('chem-error', `Enter a valid ${unit === 'tons' ? 'tons' : 'CWT'} amount.`); return; }
+
+  // Route all tons-side calculations
+  if (unit === 'tons') {
+    const rateIdx = parseInt(document.getElementById('rate-select').value);
+    const rateObj = p.rates[rateIdx];
+    calculateChemicalTons(inputVal, p, rateObj);
+    return;
+  }
+
+  const cwt = inputVal;
 
   if (p.type === 'perox') {
     const rateIdx2 = parseInt(document.getElementById('rate-select').value);
@@ -904,7 +970,7 @@ function calculateStadium() {
   const stadPerTank = tonsPerTank * appliedRate / 128;        // gal
 
   document.getElementById('st-res-spray').textContent   = fmt(sprayRate);
-  document.getElementById('st-res-product').textContent = stadPerTank.toFixed(2);
+  document.getElementById('st-res-product').textContent = Math.round(stadPerTank);
   document.getElementById('st-res-time').textContent    = timePerTank.toFixed(2);
   document.getElementById('st-res-cwt').textContent     = fmt(cwtPerTank);
   document.getElementById('st-res-unload').textContent  = fmt(unloadRate);
@@ -920,12 +986,14 @@ function fmtOx(n, dec) {
 }
 
 function calcOxiphos() {
-  const cwt   = parseFloat(document.getElementById('ox-cwt').value);
+  const inputVal = parseFloat(document.getElementById('ox-cwt').value);
   const rate  = parseFloat(document.getElementById('ox-rate1').value);
   const res   = document.getElementById('ox-res1');
-  if (!cwt || !rate || cwt <= 0 || rate <= 0) { res.style.display = 'none'; return; }
-  // gallons = cwt * rate(oz/ton) * (1/20) * (1/128)
-  const gal   = cwt * rate * (1/20) * (1/128);
+  if (!inputVal || !rate || inputVal <= 0 || rate <= 0) { res.style.display = 'none'; return; }
+  // convert to tons if needed
+  const tons = window.currentUnit === 'tons' ? inputVal : inputVal / 20;
+  // gallons = tons * rate(oz/ton) / 128
+  const gal   = tons * rate / 128;
   const totes = gal / 275;
   document.getElementById('ox-gal1').textContent   = fmtOx(gal, 1) + ' gal';
   document.getElementById('ox-totes1').textContent = fmtOx(totes, 2) + ' totes';
@@ -938,11 +1006,12 @@ function calcOxReverse() {
   const res   = document.getElementById('ox-res2');
   if (!gal || !rate || gal <= 0 || rate <= 0) { res.style.display = 'none'; return; }
   const totes = gal / 275;
-  // cwt = gallons * 128 * (1/rate) * 20
-  const cwt   = gal * 128 * (1/rate) * 20;
-  const tons  = cwt / 20;
+  const tons  = gal * 128 / rate;
+  const cwt   = tons * 20;
+  const displayVal = window.currentUnit === 'tons' ? tons : cwt;
+  const displayUnit = window.currentUnit === 'tons' ? 'tons' : 'cwt';
   document.getElementById('ox-totes2').textContent = fmtOx(totes, 2) + ' totes';
-  document.getElementById('ox-cwt2').textContent   = fmtOx(cwt, 0) + ' cwt';
+  document.getElementById('ox-cwt2').textContent   = fmtOx(displayVal, 0) + ' ' + displayUnit;
   document.getElementById('ox-tons2').textContent  = fmtOx(tons, 0) + ' tons';
   res.style.display = 'block';
 }
@@ -961,6 +1030,274 @@ function calcOxPump() {
   res.style.display = 'block';
 }
 
+
+// ── TONS PRODUCT DATA ─────────────────────────────────────────────────────────
+const PRODUCTS_TONS = {
+  smartblock: {
+    name: 'Smart Block',
+    rateLabel: 'Desired PPM',
+    type: 'lookup',
+    rates: [
+      { label: '11.5 PPM', rate: 1/305  },
+      { label: '23 PPM',   rate: 1/153  },
+      { label: '34.5 PPM', rate: 1/102  },
+      { label: '46 PPM',   rate: 1/76   },
+      { label: '57.5 PPM', rate: 1/61   },
+      { label: '69 PPM',   rate: 1/51   },
+      { label: '80.5 PPM', rate: 1/44   },
+      { label: '92 PPM',   rate: 1/38   },
+      { label: '103.5 PPM',rate: 1/34   },
+      { label: '115 PPM',  rate: 1/30.5 },
+    ]
+  },
+  zap: {
+    name: '1,4 Zap',
+    rateLabel: 'Desired PPM',
+    type: 'zap_tons',
+    rates: [
+      { label: '10 PPM',  ppm: 10  },
+      { label: '20 PPM',  ppm: 20  },
+      { label: '30 PPM',  ppm: 30  },
+      { label: '40 PPM',  ppm: 40  },
+      { label: '50 PPM',  ppm: 50  },
+      { label: '60 PPM',  ppm: 60  },
+      { label: '70 PPM',  ppm: 70  },
+      { label: '80 PPM',  ppm: 80  },
+      { label: '90 PPM',  ppm: 90  },
+      { label: '100 PPM', ppm: 100 },
+    ]
+  },
+  dmn: {
+    name: 'DMN (1,4-Sight)',
+    rateLabel: 'Desired PPM',
+    type: 'dmn_tons',
+    rates: [
+      { label: '7.5 PPM',  ppm: 7.5  },
+      { label: '10 PPM',   ppm: 10   },
+      { label: '12.5 PPM', ppm: 12.5 },
+      { label: '15 PPM',   ppm: 15   },
+      { label: '16 PPM',   ppm: 16   },
+      { label: '17 PPM',   ppm: 17   },
+      { label: '18 PPM',   ppm: 18   },
+      { label: '19 PPM',   ppm: 19   },
+      { label: '20 PPM',   ppm: 20   },
+    ]
+  },
+  storox: {
+    name: 'Storox 2.0',
+    rateLabel: 'Application Rate',
+    type: 'lookup',
+    rates: [
+      { label: 'Single', rate: 0.005  },
+      { label: 'Double', rate: 0.008  },
+      { label: 'Triple', rate: 0.01   },
+      { label: 'Chaser', rate: 0.002  },
+    ]
+  },
+  purogenepro: {
+    name: 'Purogene Pro',
+    rateLabel: 'Application Rate',
+    type: 'fixed_rate',
+    rates: [
+      { label: 'Standard', productPerUnit: 4.125/5000, waterPerUnit: 120.875/5000, solutionPerUnit: 125/5000, phosPerUnit: 5.176470588235294/5000 }
+    ]
+  },
+  purogene2: {
+    name: 'Purogene 2%',
+    rateLabel: 'Application Rate',
+    type: 'fixed_rate',
+    rates: [
+      { label: 'Standard', productPerUnit: (11.34375/110000)*20, waterPerUnit: (126.15625/110000)*20, solutionPerUnit: (137.5/110000)*20, phosPerUnit: (11.34375*1.255/128)/5500 }
+    ]
+  },
+  perox: {
+    name: 'Perox Ag',
+    rateLabel: 'Application Rate',
+    type: 'perox_tons',
+    rates: [
+      { label: 'Single',    rate: 6    },
+      { label: 'Double',    rate: 12   },
+      { label: 'Triple',    rate: 17.5 },
+      { label: 'Chaser',    rate: 4    },
+      { label: 'Disinfect', rate: 3    },
+    ]
+  },
+  cipc: {
+    name: 'CIPC',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 30',   divisor: 30   },
+      { label: '1 : 27.5', divisor: 27.5 },
+      { label: '1 : 25',   divisor: 25   },
+      { label: '1 : 22.5', divisor: 22.5 },
+      { label: '1 : 20',   divisor: 20   },
+    ]
+  },
+  amplify: {
+    name: 'Amplify',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 60', divisor: 60 },
+      { label: '1 : 45', divisor: 45 },
+      { label: '1 : 30', divisor: 30 },
+    ]
+  },
+  freshpack100: {
+    name: 'Fresh Pack 100',
+    rateLabel: 'Application Rate',
+    type: 'cwt_divide',
+    resultUnit: 'lbs',
+    rates: [
+      { label: '1 : 700', divisor: 700 },
+      { label: '1 : 75',  divisor: 75  },
+      { label: '1 : 70',  divisor: 70  },
+      { label: '1 : 60',  divisor: 60  },
+      { label: '1 : 50',  divisor: 50  },
+      { label: '1 : 30',  divisor: 30  },
+    ]
+  }
+};
+
+window.currentUnit = 'cwt';
+
+function setUnit(unit) {
+  window.currentUnit = unit;
+  document.getElementById('btn-cwt').classList.toggle('active', unit === 'cwt');
+  document.getElementById('btn-tons').classList.toggle('active', unit === 'tons');
+
+  const label = unit === 'tons' ? 'Tons' : 'CWT';
+
+  // Update Phos Acid tab labels
+  const oxLabel = document.getElementById('ox-cwt-label');
+  if (oxLabel) oxLabel.textContent = label + ' to Treat';
+  const oxRevLabel = document.getElementById('ox-cwt-reverse-label');
+  if (oxRevLabel) oxRevLabel.textContent = label + ' Treated from Gallons Used';
+  const oxResLabel = document.getElementById('ox-cwt-result-label');
+  if (oxResLabel) oxResLabel.textContent = label + ' Treated';
+
+  // Update Stadium quick rate label
+  const quickLabel = document.getElementById('quick-cwt-label');
+  if (quickLabel) quickLabel.textContent = label + ' to Treat';
+
+  // Update Stadium CWT/Truck label
+  const truckLabel = document.getElementById('stad-cwt-truck-label');
+  if (truckLabel) truckLabel.textContent = label + ' / Truck';
+
+  // Reset product form
+  document.getElementById('product').value = '';
+  document.getElementById('rate-field').style.display = 'none';
+  document.getElementById('cwt-field').style.display = 'none';
+  document.getElementById('label-rate-field').style.display = 'none';
+  document.getElementById('chem-result').classList.remove('visible');
+  clearError('chem-error');
+  onProductChange();
+}
+
+function getActiveProducts() {
+  return window.currentUnit === 'tons' ? PRODUCTS_TONS : PRODUCTS;
+}
+
+function calculateChemicalTons(tons, p, rateObj) {
+  clearError('chem-error');
+  const resultCard = document.getElementById('chem-result');
+  resultCard.classList.remove('visible');
+
+  if (p.type === 'zap_tons') {
+    const gallons = tons * rateObj.ppm / 3400;
+    document.getElementById('res-unit').textContent = 'gallons';
+    document.getElementById('res-gallons').textContent = Math.round(gallons);
+    document.getElementById('res-extra').innerHTML = '';
+    resultCard.classList.add('visible');
+    return;
+  }
+
+  if (p.type === 'dmn_tons') {
+    const gallons = tons * rateObj.ppm / 4000;
+    document.getElementById('res-unit').textContent = 'gallons';
+    document.getElementById('res-gallons').textContent = Math.round(gallons);
+    document.getElementById('res-extra').innerHTML = '';
+    resultCard.classList.add('visible');
+    return;
+  }
+
+  if (p.type === 'perox_tons') {
+    const BULK_DENSITY = 40;
+    const ft3 = tons * 2000 / BULK_DENSITY * 1.13;
+    const totalFlOz = rateObj.rate * (ft3 / 1000);
+    const totalGal = totalFlOz / 128;
+    const totalSolution = 40;
+    const waterGal = totalSolution - totalGal;
+    const paperworkRate = rateObj.label === 'Disinfect' ? 'Disinfect — 3 oz/1,000 ft³' : `${rateObj.label} — ${(rateObj.rate / 1000).toFixed(4)} fl oz/ft³`;
+    document.getElementById('res-unit').textContent = 'gallons';
+    document.getElementById('res-gallons').textContent = fmt(totalGal);
+    document.getElementById('res-extra').innerHTML = `
+      <div class="result-row"><span class="result-row-label">Total Water to Add</span><span class="result-row-value">${fmt(waterGal)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(totalSolution)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Rate for Paperwork</span><span class="result-row-value">${paperworkRate}</span></div>
+    `;
+    resultCard.classList.add('visible');
+    return;
+  }
+
+  if (p.type === 'cwt_divide') {
+    const result = tons / rateObj.divisor;
+    document.getElementById('res-unit').textContent = p.resultUnit;
+    document.getElementById('res-gallons').textContent = fmt(result);
+    document.getElementById('res-extra').innerHTML = '';
+    resultCard.classList.add('visible');
+    return;
+  }
+
+  let gallons, extraRows = '';
+
+  if (p.type === 'lookup') {
+    gallons = tons * rateObj.rate;
+  } else if (p.type === 'fixed_rate') {
+    gallons = tons * rateObj.productPerUnit;
+    const water = tons * rateObj.waterPerUnit;
+    const solution = tons * rateObj.solutionPerUnit;
+    const phosAcidFlOz = tons * rateObj.phosPerUnit;
+    extraRows = `
+      <div class="result-row"><span class="result-row-label">Gallons of Water</span><span class="result-row-value">${fmt(water)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(solution)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">75% Phos Acid</span><span class="result-row-value">${fmt(phosAcidFlOz)} fl oz</span></div>
+    `;
+  }
+
+  document.getElementById('res-unit').textContent = 'gallons';
+  document.getElementById('res-gallons').textContent = fmt(gallons);
+  document.getElementById('res-extra').innerHTML = extraRows;
+  resultCard.classList.add('visible');
+}
+
+function calculateQuick() {
+  clearError('quick-error');
+  document.getElementById('quick-result').classList.remove('visible');
+
+  const rate = parseFloat(document.getElementById('quick-rate').value); // oz/ton
+  const inputVal = parseFloat(document.getElementById('quick-cwt').value);
+  const unit = window.currentUnit || 'cwt';
+
+  if (!inputVal || inputVal <= 0) {
+    showError('quick-error', `Please enter a valid ${unit === 'tons' ? 'tons' : 'CWT'} amount.`);
+    return;
+  }
+
+  const tons = unit === 'tons' ? inputVal : inputVal / 20;
+  const totalOz = rate * tons;
+  const gallons = totalOz / 128;
+
+  document.getElementById('quick-res-gallons').textContent = Math.round(gallons);
+  document.getElementById('quick-res-extra').innerHTML = `
+    <div class="result-row"><span class="result-row-label">Total oz</span><span class="result-row-value">${Math.round(totalOz)} oz</span></div>
+    <div class="result-row"><span class="result-row-label">Tons Treated</span><span class="result-row-value">${fmt(tons)}</span></div>
+  `;
+  document.getElementById('quick-result').classList.add('visible');
+}
 </script>
 </body>
 </html>
