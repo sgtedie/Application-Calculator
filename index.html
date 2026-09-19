@@ -479,7 +479,7 @@
           <div class="result-tile-unit">gal / hour</div>
         </div>
         <div class="result-tile highlight">
-          <div class="result-tile-label">Stadium / Tank</div>
+          <div class="result-tile-label">Amount / Tank</div>
           <div class="result-tile-value" id="st-res-product">—</div>
           <div class="result-tile-unit">gallons</div>
         </div>
@@ -489,14 +489,14 @@
           <div class="result-tile-unit">hours</div>
         </div>
         <div class="result-tile">
-          <div class="result-tile-label">CWT / Tank</div>
+          <div class="result-tile-label" id="st-cwt-tank-label">CWT / Tank</div>
           <div class="result-tile-value" id="st-res-cwt">—</div>
-          <div class="result-tile-unit">cwt</div>
+          <div class="result-tile-unit" id="st-cwt-tank-unit">cwt</div>
         </div>
         <div class="result-tile">
-          <div class="result-tile-label">Unload Rate</div>
+          <div class="result-tile-label" id="st-unload-rate-result-label">Unload Rate</div>
           <div class="result-tile-value" id="st-res-unload">—</div>
-          <div class="result-tile-unit">cwt / hour</div>
+          <div class="result-tile-unit" id="st-unload-rate-result-unit">cwt / hour</div>
         </div>
       </div>
     </div>
@@ -971,13 +971,14 @@ function calculateStadium() {
   const sprayRate   = nozzles * gph;                          // gal/hr
   const timePerTank = tank / sprayRate;                       // hrs
   const cwtPerTank  = timePerTank * unloadRate;               // cwt/tank
-  const tonsPerTank = cwtPerTank / 20;
+  const tonsPerTank = window.currentUnit === 'tons' ? cwtPerTank : cwtPerTank / 20;
   const stadPerTank = tonsPerTank * appliedRate / 128;        // gal
 
   document.getElementById('st-res-spray').textContent   = fmt(sprayRate);
   document.getElementById('st-res-product').textContent = Math.round(stadPerTank);
+  const tankDisplayVal = window.currentUnit === 'tons' ? tonsPerTank : cwtPerTank;
   document.getElementById('st-res-time').textContent    = timePerTank.toFixed(2);
-  document.getElementById('st-res-cwt').textContent     = fmt(cwtPerTank);
+  document.getElementById('st-res-cwt').textContent     = fmt(tankDisplayVal);
   document.getElementById('st-res-unload').textContent  = fmt(unloadRate);
 
   resultCard.classList.add('visible');
@@ -1199,6 +1200,16 @@ function setUnit(unit) {
   // Update Phos Acid Pump Rate CWT/Truck label
   const oxTruckLabel = document.getElementById('ox-cwt-truck-label');
   if (oxTruckLabel) oxTruckLabel.textContent = label + ' / Truck';
+
+  // Update Stadium result tile labels
+  const cwtTankLabel = document.getElementById('st-cwt-tank-label');
+  if (cwtTankLabel) cwtTankLabel.textContent = label + ' / Tank';
+  const cwtTankUnit = document.getElementById('st-cwt-tank-unit');
+  if (cwtTankUnit) cwtTankUnit.textContent = label.toLowerCase();
+  const unloadResLabel = document.getElementById('st-unload-rate-result-label');
+  if (unloadResLabel) unloadResLabel.textContent = 'Unload Rate';
+  const unloadResUnit = document.getElementById('st-unload-rate-result-unit');
+  if (unloadResUnit) unloadResUnit.textContent = label.toLowerCase() + ' / hour';
 
   // Update warning message
   const warningEl = document.getElementById('stad-warning');
