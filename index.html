@@ -390,6 +390,9 @@
       <div class="result-primary" id="res-gallons">—</div>
       <div class="result-unit" id="res-unit">gallons</div>
       <div class="result-rows" id="res-extra"></div>
+      <div id="smartblock-note" style="display:none;margin-top:14px;padding:12px 14px;border-radius:8px;background:#f0c000;border:2px solid #f0c000;font-size:13px;font-weight:800;color:#8b0000;line-height:1.6;letter-spacing:0.3px;">
+        ⚠ <span id="smartblock-note-text">RATES FOR PAPERWORK MUST MATCH THE OZ/610 CWT, PPM IS OPTIONAL.</span>
+      </div>
     </div>
 
   </div>
@@ -612,21 +615,19 @@
 const PRODUCTS = {
   smartblock: {
     name: 'Smart Block',
-    rateLabel: 'Desired PPM',
-    rateUnit: 'PPM',
-    type: 'lookup', // gallons per CWT lookup
-    // rate = gal per CWT  (e.g. 6100 CWT per gallon → 1/6100)
+    rateLabel: 'Desired Rate',
+    type: 'lookup',
     rates: [
-      { label: '11.5 PPM', ppm: 11.5, rate: 1/6100 },
-      { label: '23 PPM',   ppm: 23,   rate: 1/3050 },
-      { label: '34.5 PPM', ppm: 34.5, rate: 1/2033 },
-      { label: '46 PPM',   ppm: 46,   rate: 1/1525 },
-      { label: '57.5 PPM', ppm: 57.5, rate: 1/1220 },
-      { label: '69 PPM',   ppm: 69,   rate: 1/1017 },
-      { label: '80.5 PPM', ppm: 80.5, rate: 1/871  },
-      { label: '92 PPM',   ppm: 92,   rate: 1/763  },
-      { label: '103.5 PPM',ppm: 103.5,rate: 1/678  },
-      { label: '115 PPM',  ppm: 115,  rate: 1/610  },
+      { label: '13 oz/610 CWT (11.5 PPM)',  rate: 1/6100 },
+      { label: '26 oz/610 CWT (23 PPM)',    rate: 1/3050 },
+      { label: '38 oz/610 CWT (34.5 PPM)',  rate: 1/2033 },
+      { label: '51 oz/610 CWT (46 PPM)',    rate: 1/1525 },
+      { label: '64 oz/610 CWT (57.5 PPM)',  rate: 1/1220 },
+      { label: '77 oz/610 CWT (69 PPM)',    rate: 1/1017 },
+      { label: '90 oz/610 CWT (80.5 PPM)',  rate: 1/871  },
+      { label: '102 oz/610 CWT (92 PPM)',   rate: 1/763  },
+      { label: '115 oz/610 CWT (103.5 PPM)',rate: 1/678  },
+      { label: '128 oz/610 CWT (115 PPM)',  rate: 1/610  },
     ]
   },
   zap: {
@@ -1041,19 +1042,19 @@ function calcOxPump() {
 const PRODUCTS_TONS = {
   smartblock: {
     name: 'Smart Block',
-    rateLabel: 'Desired PPM',
-    type: 'lookup',
+    rateLabel: 'Desired Rate',
+    type: 'smartblock_tons',
     rates: [
-      { label: '11.5 PPM', rate: 1/305  },
-      { label: '23 PPM',   rate: 1/153  },
-      { label: '34.5 PPM', rate: 1/102  },
-      { label: '46 PPM',   rate: 1/76   },
-      { label: '57.5 PPM', rate: 1/61   },
-      { label: '69 PPM',   rate: 1/51   },
-      { label: '80.5 PPM', rate: 1/44   },
-      { label: '92 PPM',   rate: 1/38   },
-      { label: '103.5 PPM',rate: 1/34   },
-      { label: '115 PPM',  rate: 1/30.5 },
+      { label: '13 oz/30.5 tons (11.5 PPM)',  oz: 13  },
+      { label: '26 oz/30.5 tons (23 PPM)',    oz: 26  },
+      { label: '38 oz/30.5 tons (34.5 PPM)',  oz: 38  },
+      { label: '51 oz/30.5 tons (46 PPM)',    oz: 51  },
+      { label: '64 oz/30.5 tons (57.5 PPM)',  oz: 64  },
+      { label: '77 oz/30.5 tons (69 PPM)',    oz: 77  },
+      { label: '90 oz/30.5 tons (80.5 PPM)',  oz: 90  },
+      { label: '102 oz/30.5 tons (92 PPM)',   oz: 102 },
+      { label: '115 oz/30.5 tons (103.5 PPM)',oz: 115 },
+      { label: '128 oz/30.5 tons (115 PPM)',  oz: 128 },
     ]
   },
   zap: {
@@ -1215,6 +1216,12 @@ function setUnit(unit) {
   const warningEl = document.getElementById('stad-warning');
   if (warningEl) warningEl.textContent = `⚠ Use either the ${label}/hr field above OR this helper — not both.`;
 
+  // Update Smart Block note text
+  const sbNote = document.getElementById('smartblock-note-text');
+  if (sbNote) sbNote.textContent = unit === 'tons'
+    ? 'RATES FOR PAPERWORK MUST MATCH THE OZ/30.5 TONS, PPM IS OPTIONAL.'
+    : 'RATES FOR PAPERWORK MUST MATCH THE OZ/610 CWT, PPM IS OPTIONAL.';
+
   // Reset product form
   document.getElementById('product').value = '';
   document.getElementById('rate-field').style.display = 'none';
@@ -1233,6 +1240,16 @@ function calculateChemicalTons(tons, p, rateObj) {
   clearError('chem-error');
   const resultCard = document.getElementById('chem-result');
   resultCard.classList.remove('visible');
+
+  if (p.type === 'smartblock_tons') {
+    const gallons = (tons / 30.5) * rateObj.oz / 128;
+    document.getElementById('res-unit').textContent = 'gallons';
+    document.getElementById('res-gallons').textContent = fmt(gallons);
+    document.getElementById('res-extra').innerHTML = '';
+    document.getElementById('smartblock-note').style.display = 'block';
+    resultCard.classList.add('visible');
+    return;
+  }
 
   if (p.type === 'zap_tons') {
     const gallons = tons * rateObj.ppm / 3400;
@@ -1299,6 +1316,7 @@ function calculateChemicalTons(tons, p, rateObj) {
   document.getElementById('res-unit').textContent = 'gallons';
   document.getElementById('res-gallons').textContent = fmt(gallons);
   document.getElementById('res-extra').innerHTML = extraRows;
+  document.getElementById('smartblock-note').style.display = pid === 'smartblock' ? 'block' : 'none';
   resultCard.classList.add('visible');
 }
 
