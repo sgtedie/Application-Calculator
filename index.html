@@ -386,7 +386,7 @@
 
     <!-- Standard result -->
     <div class="result-card" id="chem-result">
-      <div class="result-label">Gallons Needed</div>
+      <div class="result-label" id="res-label">Gallons Needed</div>
       <div class="result-primary" id="res-gallons">—</div>
       <div class="result-unit" id="res-unit">gallons</div>
       <div class="result-rows" id="res-extra"></div>
@@ -466,7 +466,7 @@
       <button class="calc-btn" onclick="calculateQuick()">Calculate</button>
       <div class="error-msg" id="quick-error"></div>
       <div class="result-card" id="quick-result" style="margin-top:16px">
-        <div class="result-label">Gallons Needed</div>
+        <div class="result-label" id="res-label">Gallons Needed</div>
         <div class="result-primary" id="quick-res-gallons">—</div>
         <div class="result-unit" id="res-unit">gallons</div>
         <div class="result-rows" id="quick-res-extra"></div>
@@ -861,8 +861,9 @@ function calculateChemical() {
 
   // Route all tons-side calculations
   if (unit === 'tons') {
-    const rateIdx = parseInt(document.getElementById('rate-select').value);
+    const rateIdx = parseInt(document.getElementById('rate-select').value) || 0;
     const rateObj = p.rates[rateIdx];
+    if (!rateObj) { showError('chem-error', 'Please select a rate.'); return; }
     calculateChemicalTons(inputVal, p, rateObj);
     return;
   }
@@ -880,10 +881,11 @@ function calculateChemical() {
     const rateIdx3 = parseInt(document.getElementById('rate-select').value);
     const rateObj3 = p.rates[rateIdx3];
     const lbs = cwt / rateObj3.divisor;
-    document.querySelector('.result-label').textContent = 'Lbs Needed';
-    document.querySelector('.result-unit').textContent = 'lbs';
-    document.getElementById('res-gallons').textContent = lbs.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+    document.getElementById('res-label').textContent = 'Lbs Needed';
+    document.getElementById('res-unit').textContent = 'lbs';
+    document.getElementById('res-gallons').textContent = fmt(lbs);
     document.getElementById('res-extra').innerHTML = '';
+    document.getElementById('smartblock-note').style.display = 'none';
     resultCard.classList.add('visible');
     return;
   }
@@ -912,6 +914,9 @@ function calculateChemical() {
   document.querySelector('.result-label').textContent = 'Gallons Needed';
   document.querySelector('.result-unit').textContent = 'gallons';
   document.getElementById('res-gallons').textContent = fmt(gallons);
+  document.getElementById('res-label').textContent = 'Gallons Needed';
+  document.getElementById('res-unit').textContent = 'gallons';
+  document.getElementById('smartblock-note').style.display = pid === 'smartblock' ? 'block' : 'none';
   document.getElementById('res-extra').innerHTML = extraRows;
   resultCard.classList.add('visible');
 }
@@ -919,7 +924,7 @@ function calculateChemical() {
 function calculatePerox(cwt, rateObj) {
   const BULK_DENSITY = 40; // lbs/ft³
   // From sheet: ft³ = CWT * (100/bulkDensity) * 1.3
-  const ft3 = cwt * (100 / BULK_DENSITY) * 1.13;
+  const ft3 = cwt * (100 / BULK_DENSITY) * (rateObj.multiplier || 1.13);
 
   // rate is fl oz per 1,000 ft³
   const totalFlOz = rateObj.rate * (ft3 / 1000);
@@ -1122,11 +1127,11 @@ const PRODUCTS_TONS = {
     rateLabel: 'Application Rate',
     type: 'perox_tons',
     rates: [
-      { label: 'Single',    rate: 6    },
-      { label: 'Double',    rate: 12   },
-      { label: 'Triple',    rate: 17.5 },
-      { label: 'Chaser',    rate: 4    },
-      { label: 'Disinfect', rate: 3    },
+      { label: 'Single',    rate: 6,    multiplier: 1.13 },
+      { label: 'Double',    rate: 12,   multiplier: 1.13 },
+      { label: 'Triple',    rate: 17.5, multiplier: 1.13 },
+      { label: 'Chaser',    rate: 4,    multiplier: 1.3  },
+      { label: 'Disinfect', rate: 3,    multiplier: 1.13 },
     ]
   },
   cipc: {
@@ -1271,7 +1276,7 @@ function calculateChemicalTons(tons, p, rateObj) {
 
   if (p.type === 'perox_tons') {
     const BULK_DENSITY = 40;
-    const ft3 = tons * 2000 / BULK_DENSITY * 1.13;
+    const ft3 = tons * 2000 / BULK_DENSITY * (rateObj.multiplier || 1.13);
     const totalFlOz = rateObj.rate * (ft3 / 1000);
     const totalGal = totalFlOz / 128;
     const totalSolution = 40;
@@ -1290,9 +1295,11 @@ function calculateChemicalTons(tons, p, rateObj) {
 
   if (p.type === 'cwt_divide') {
     const result = tons / rateObj.divisor;
+    document.getElementById('res-label').textContent = 'Lbs Needed';
     document.getElementById('res-unit').textContent = p.resultUnit;
     document.getElementById('res-gallons').textContent = fmt(result);
     document.getElementById('res-extra').innerHTML = '';
+    document.getElementById('smartblock-note').style.display = 'none';
     resultCard.classList.add('visible');
     return;
   }
@@ -1313,10 +1320,11 @@ function calculateChemicalTons(tons, p, rateObj) {
     `;
   }
 
+  document.getElementById('res-label').textContent = 'Gallons Needed';
   document.getElementById('res-unit').textContent = 'gallons';
   document.getElementById('res-gallons').textContent = fmt(gallons);
   document.getElementById('res-extra').innerHTML = extraRows;
-  document.getElementById('smartblock-note').style.display = pid === 'smartblock' ? 'block' : 'none';
+  document.getElementById('smartblock-note').style.display = 'none';
   resultCard.classList.add('visible');
 }
 
