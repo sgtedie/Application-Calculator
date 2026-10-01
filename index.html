@@ -772,8 +772,9 @@ function clearError(id) {
 }
 
 function fmt(n) {
-  if (isNaN(n)) return '—';
-  return Math.round(n).toLocaleString();
+  if (isNaN(n) || n === undefined) return '—';
+  const rounded = Math.round(n * 4) / 4;
+  return rounded.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
 // ── CHEMICAL CALCULATOR ────────────────────────────────────────────────────────
@@ -981,7 +982,7 @@ function calculateStadium() {
   const stadPerTank = tonsPerTank * appliedRate / 128;        // gal
 
   document.getElementById('st-res-spray').textContent   = fmt(sprayRate);
-  document.getElementById('st-res-product').textContent = Math.round(stadPerTank);
+  document.getElementById('st-res-product').textContent = fmt(stadPerTank);
   const tankDisplayVal = window.currentUnit === 'tons' ? tonsPerTank : cwtPerTank;
   document.getElementById('st-res-time').textContent    = timePerTank.toFixed(2);
   document.getElementById('st-res-cwt').textContent     = fmt(tankDisplayVal);
@@ -1259,7 +1260,7 @@ function calculateChemicalTons(tons, p, rateObj) {
   if (p.type === 'zap_tons') {
     const gallons = tons * rateObj.ppm / 3400;
     document.getElementById('res-unit').textContent = 'gallons';
-    document.getElementById('res-gallons').textContent = Math.round(gallons);
+    document.getElementById('res-gallons').textContent = fmt(gallons);
     document.getElementById('res-extra').innerHTML = '';
     resultCard.classList.add('visible');
     return;
@@ -1268,7 +1269,7 @@ function calculateChemicalTons(tons, p, rateObj) {
   if (p.type === 'dmn_tons') {
     const gallons = tons * rateObj.ppm / 4000;
     document.getElementById('res-unit').textContent = 'gallons';
-    document.getElementById('res-gallons').textContent = Math.round(gallons);
+    document.getElementById('res-gallons').textContent = fmt(gallons);
     document.getElementById('res-extra').innerHTML = '';
     resultCard.classList.add('visible');
     return;
@@ -1345,7 +1346,7 @@ function calculateQuick() {
   const totalOz = rate * tons;
   const gallons = totalOz / 128;
 
-  document.getElementById('quick-res-gallons').textContent = Math.round(gallons);
+  document.getElementById('quick-res-gallons').textContent = fmt(gallons);
   document.getElementById('quick-res-extra').innerHTML = `
     <div class="result-row"><span class="result-row-label">Total oz</span><span class="result-row-value">${Math.round(totalOz)} oz</span></div>
     <div class="result-row"><span class="result-row-label">Tons Treated</span><span class="result-row-value">${fmt(tons)}</span></div>
