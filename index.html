@@ -773,8 +773,18 @@ function clearError(id) {
 
 function fmt(n) {
   if (isNaN(n) || n === undefined) return '—';
+  return Math.round(n).toLocaleString();
+}
+
+function fmtQuarter(n) {
+  if (isNaN(n) || n === undefined) return '—';
   const rounded = Math.round(n * 4) / 4;
   return rounded.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function fmtWhole(n) {
+  if (isNaN(n) || n === undefined) return '—';
+  return Math.round(n).toLocaleString();
 }
 
 // ── CHEMICAL CALCULATOR ────────────────────────────────────────────────────────
@@ -906,9 +916,9 @@ function calculateChemical() {
     // 75% phos acid scales at 1.255 fl oz per gallon of product
     const phosAcidFlOz = gallons * 1.255;
     extraRows = `
-      <div class="result-row"><span class="result-row-label">Gallons of Water</span><span class="result-row-value">${fmt(water)} gal</span></div>
-      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(solution)} gal</span></div>
-      <div class="result-row"><span class="result-row-label">75% Phos Acid</span><span class="result-row-value">${fmt(phosAcidFlOz)} fl oz</span></div>
+      <div class="result-row"><span class="result-row-label">Gallons of Water</span><span class="result-row-value">${fmtWhole(water)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmtWhole(solution)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">75% Phos Acid</span><span class="result-row-value">${fmtWhole(phosAcidFlOz)} fl oz</span></div>
     `;
   }
 
@@ -941,8 +951,8 @@ function calculatePerox(cwt, rateObj) {
   const resultCard = document.getElementById('chem-result');
   document.getElementById('res-gallons').textContent = fmt(totalGal);
   document.getElementById('res-extra').innerHTML = `
-    <div class="result-row"><span class="result-row-label">Total Water to Add</span><span class="result-row-value">${fmt(waterGal)} gal</span></div>
-    <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(totalSolution)} gal</span></div>
+    <div class="result-row"><span class="result-row-label">Total Water to Add</span><span class="result-row-value">${fmtWhole(waterGal)} gal</span></div>
+    <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmtWhole(totalSolution)} gal</span></div>
     <div class="result-row"><span class="result-row-label">Rate for Paperwork</span><span class="result-row-value">${paperworkRate} fl oz/ft³</span></div>
   `;
   resultCard.classList.add('visible');
@@ -982,7 +992,7 @@ function calculateStadium() {
   const stadPerTank = tonsPerTank * appliedRate / 128;        // gal
 
   document.getElementById('st-res-spray').textContent   = fmt(sprayRate);
-  document.getElementById('st-res-product').textContent = fmt(stadPerTank);
+  document.getElementById('st-res-product').textContent = fmtQuarter(stadPerTank);
   const tankDisplayVal = window.currentUnit === 'tons' ? tonsPerTank : cwtPerTank;
   document.getElementById('st-res-time').textContent    = timePerTank.toFixed(2);
   document.getElementById('st-res-cwt').textContent     = fmt(tankDisplayVal);
@@ -1112,7 +1122,7 @@ const PRODUCTS_TONS = {
     rateLabel: 'Application Rate',
     type: 'fixed_rate',
     rates: [
-      { label: 'Standard', productPerUnit: 4.125/5000, waterPerUnit: 120.875/5000, solutionPerUnit: 125/5000, phosPerUnit: 5.176470588235294/5000 }
+      { label: '400 PPM', productPerUnit: 4.125/5000, waterPerUnit: 120.875/5000, solutionPerUnit: 125/5000, phosPerUnit: 5.176470588235294/5000 }
     ]
   },
   purogene2: {
@@ -1120,7 +1130,7 @@ const PRODUCTS_TONS = {
     rateLabel: 'Application Rate',
     type: 'fixed_rate',
     rates: [
-      { label: 'Standard', productPerUnit: (11.34375/110000)*20, waterPerUnit: (126.15625/110000)*20, solutionPerUnit: (137.5/110000)*20, phosPerUnit: (11.34375*1.255/128)/5500 }
+      { label: '400 PPM', productPerUnit: (11.34375/110000)*20, waterPerUnit: (126.15625/110000)*20, solutionPerUnit: (137.5/110000)*20, phosPerUnit: (11.34375*1.255/128)/5500 }
     ]
   },
   perox: {
@@ -1286,8 +1296,8 @@ function calculateChemicalTons(tons, p, rateObj) {
     document.getElementById('res-unit').textContent = 'gallons';
     document.getElementById('res-gallons').textContent = fmt(totalGal);
     document.getElementById('res-extra').innerHTML = `
-      <div class="result-row"><span class="result-row-label">Total Water to Add</span><span class="result-row-value">${fmt(waterGal)} gal</span></div>
-      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(totalSolution)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Water to Add</span><span class="result-row-value">${fmtWhole(waterGal)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmtWhole(totalSolution)} gal</span></div>
       <div class="result-row"><span class="result-row-label">Rate for Paperwork</span><span class="result-row-value">${paperworkRate}</span></div>
     `;
     resultCard.classList.add('visible');
@@ -1315,9 +1325,9 @@ function calculateChemicalTons(tons, p, rateObj) {
     const solution = tons * rateObj.solutionPerUnit;
     const phosAcidFlOz = tons * rateObj.phosPerUnit;
     extraRows = `
-      <div class="result-row"><span class="result-row-label">Gallons of Water</span><span class="result-row-value">${fmt(water)} gal</span></div>
-      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmt(solution)} gal</span></div>
-      <div class="result-row"><span class="result-row-label">75% Phos Acid</span><span class="result-row-value">${fmt(phosAcidFlOz)} fl oz</span></div>
+      <div class="result-row"><span class="result-row-label">Gallons of Water</span><span class="result-row-value">${fmtWhole(water)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">Total Solution</span><span class="result-row-value">${fmtWhole(solution)} gal</span></div>
+      <div class="result-row"><span class="result-row-label">75% Phos Acid</span><span class="result-row-value">${fmtWhole(phosAcidFlOz)} fl oz</span></div>
     `;
   }
 
@@ -1346,7 +1356,7 @@ function calculateQuick() {
   const totalOz = rate * tons;
   const gallons = totalOz / 128;
 
-  document.getElementById('quick-res-gallons').textContent = fmt(gallons);
+  document.getElementById('quick-res-gallons').textContent = fmtQuarter(gallons);
   document.getElementById('quick-res-extra').innerHTML = `
     <div class="result-row"><span class="result-row-label">Total oz</span><span class="result-row-value">${Math.round(totalOz)} oz</span></div>
     <div class="result-row"><span class="result-row-label">Tons Treated</span><span class="result-row-value">${fmt(tons)}</span></div>
