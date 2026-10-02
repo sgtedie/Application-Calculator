@@ -450,6 +450,37 @@
 
     <button class="calc-btn" onclick="calculateStadium()">Calculate</button>
 
+    <div class="result-card" id="stad-result" style="margin-top:16px">
+      <div class="result-label">Stadium Results</div>
+      <div class="result-grid">
+        <div class="result-tile highlight">
+          <div class="result-tile-label">Spray Rate</div>
+          <div class="result-tile-value" id="st-res-spray">—</div>
+          <div class="result-tile-unit">gal / hour</div>
+        </div>
+        <div class="result-tile highlight">
+          <div class="result-tile-label">Amount / Tank</div>
+          <div class="result-tile-value" id="st-res-product">—</div>
+          <div class="result-tile-unit">gallons</div>
+        </div>
+        <div class="result-tile">
+          <div class="result-tile-label" id="st-cwt-tank-label">CWT / Tank</div>
+          <div class="result-tile-value" id="st-res-cwt">—</div>
+          <div class="result-tile-unit" id="st-cwt-tank-unit">cwt</div>
+        </div>
+        <div class="result-tile">
+          <div class="result-tile-label">Time / Tank</div>
+          <div class="result-tile-value" id="st-res-time">—</div>
+          <div class="result-tile-unit">hours</div>
+        </div>
+        <div class="result-tile">
+          <div class="result-tile-label" id="st-unload-rate-result-label">Unload Rate</div>
+          <div class="result-tile-value" id="st-res-unload">—</div>
+          <div class="result-tile-unit" id="st-unload-rate-result-unit">cwt / hour</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card" style="margin-top:16px">
       <div class="card-label">Gallons Needed by CWT / Tons</div>
       <div class="field">
@@ -500,6 +531,33 @@
           <div class="result-tile-label" id="st-unload-rate-result-label">Unload Rate</div>
           <div class="result-tile-value" id="st-res-unload">—</div>
           <div class="result-tile-unit" id="st-unload-rate-result-unit">cwt / hour</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="card-label">Product Used Calculator</div>
+      <div class="field">
+        <label>Product</label>
+        <select id="rev-product" oninput="calculateReverse()">
+          <option value="0.6">Archive — 0.6 oz/ton</option>
+          <option value="1">Stadium — 1 oz/ton</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Gallons Used</label>
+        <input type="number" id="rev-gallons" placeholder="" inputmode="decimal" step="0.25" oninput="calculateReverse()">
+      </div>
+      <div class="error-msg" id="rev-error"></div>
+      <div class="result-card" id="rev-result" style="margin-top:16px">
+        <div class="result-label" id="rev-res-label">CWT Treated</div>
+        <div class="result-primary" id="rev-res-value">—</div>
+        <div class="result-unit" id="rev-res-unit">cwt</div>
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-row-label" id="rev-res-alt-label">Tons Treated</span>
+            <span class="result-row-value" id="rev-res-alt">—</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1218,6 +1276,15 @@ function setUnit(unit) {
   const oxTruckLabel = document.getElementById('ox-cwt-truck-label');
   if (oxTruckLabel) oxTruckLabel.textContent = label + ' / Truck';
 
+  // Update reverse calculator labels
+  const revLabel = document.getElementById('rev-res-label');
+  if (revLabel) revLabel.textContent = (unit === 'tons' ? 'Tons' : 'CWT') + ' Treated';
+  const revUnit = document.getElementById('rev-res-unit');
+  if (revUnit) revUnit.textContent = unit === 'tons' ? 'tons' : 'cwt';
+  const revAltLabel = document.getElementById('rev-res-alt-label');
+  if (revAltLabel) revAltLabel.textContent = unit === 'tons' ? 'CWT Treated' : 'Tons Treated';
+  document.getElementById('rev-result') && document.getElementById('rev-result').classList.remove('visible');
+
   // Update Stadium result tile labels
   const cwtTankLabel = document.getElementById('st-cwt-tank-label');
   if (cwtTankLabel) cwtTankLabel.textContent = label + ' / Tank';
@@ -1337,6 +1404,34 @@ function calculateChemicalTons(tons, p, rateObj) {
   document.getElementById('res-extra').innerHTML = extraRows;
   document.getElementById('smartblock-note').style.display = 'none';
   resultCard.classList.add('visible');
+}
+
+function calculateReverse() {
+  clearError('rev-error');
+  document.getElementById('rev-result').classList.remove('visible');
+
+  const gallons = parseFloat(document.getElementById('rev-gallons').value);
+  const rate = parseFloat(document.getElementById('rev-product').value); // oz/ton
+  const unit = window.currentUnit || 'cwt';
+
+  if (!gallons || gallons <= 0) return;
+
+  const oz = gallons * 128;
+  const tons = oz / rate;
+  const cwt = tons * 20;
+
+  const primaryVal = unit === 'tons' ? tons : cwt;
+  const primaryUnit = unit === 'tons' ? 'tons' : 'cwt';
+  const altVal = unit === 'tons' ? cwt : tons;
+  const altLabel = unit === 'tons' ? 'CWT Treated' : 'Tons Treated';
+  const altUnit = unit === 'tons' ? 'cwt' : 'tons';
+
+  document.getElementById('rev-res-label').textContent = (unit === 'tons' ? 'Tons' : 'CWT') + ' Treated';
+  document.getElementById('rev-res-value').textContent = fmt(primaryVal);
+  document.getElementById('rev-res-unit').textContent = primaryUnit;
+  document.getElementById('rev-res-alt-label').textContent = altLabel;
+  document.getElementById('rev-res-alt').textContent = fmt(altVal) + ' ' + altUnit;
+  document.getElementById('rev-result').classList.add('visible');
 }
 
 function calculateQuick() {
