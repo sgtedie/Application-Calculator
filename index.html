@@ -562,6 +562,25 @@
       </div>
     </div>
 
+    <!-- FIND MY RATE -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-label">Find My Rate</div>
+      <div class="field">
+        <label>Gallons Used</label>
+        <input type="number" id="fmr-gallons" placeholder="" inputmode="decimal" step="0.25" oninput="calcFindRate()">
+      </div>
+      <div class="field">
+        <label id="fmr-input-label">CWT Treated</label>
+        <input type="number" id="fmr-cwt" placeholder="" inputmode="numeric" oninput="calcFindRate()">
+      </div>
+      <div class="error-msg" id="fmr-error"></div>
+      <div class="result-card" id="fmr-result" style="margin-top:16px">
+        <div class="result-label">Application Rate</div>
+        <div class="result-primary" id="fmr-res-value">—</div>
+        <div class="result-unit">oz / ton</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ====== OXIPHOS TAB ====== -->
@@ -1282,6 +1301,11 @@ function setUnit(unit) {
   const oxTruckLabel = document.getElementById('ox-cwt-truck-label');
   if (oxTruckLabel) oxTruckLabel.textContent = label + ' / Truck';
 
+  // Update Find My Rate label
+  const fmrLabel = document.getElementById('fmr-input-label');
+  if (fmrLabel) fmrLabel.textContent = unit === 'tons' ? 'Tons Treated' : 'CWT Treated';
+  document.getElementById('fmr-result') && document.getElementById('fmr-result').classList.remove('visible');
+
   // Update reverse calculator labels
   const revLabel = document.getElementById('rev-res-label');
   if (revLabel) revLabel.textContent = (unit === 'tons' ? 'Tons' : 'CWT') + ' Treated';
@@ -1440,6 +1464,24 @@ function calculateReverse() {
   document.getElementById('rev-res-alt-label').textContent = altLabel;
   document.getElementById('rev-res-alt').textContent = fmt(altVal) + ' ' + altUnit;
   document.getElementById('rev-result').classList.add('visible');
+}
+
+function calcFindRate() {
+  clearError('fmr-error');
+  document.getElementById('fmr-result').classList.remove('visible');
+
+  const gallons = parseFloat(document.getElementById('fmr-gallons').value);
+  const input = parseFloat(document.getElementById('fmr-cwt').value);
+  const unit = window.currentUnit || 'cwt';
+
+  if (!gallons || gallons <= 0 || !input || input <= 0) return;
+
+  const oz = gallons * 128;
+  const tons = unit === 'tons' ? input : input / 20;
+  const rate = oz / tons;
+
+  document.getElementById('fmr-res-value').textContent = rate.toFixed(2);
+  document.getElementById('fmr-result').classList.add('visible');
 }
 
 function calculateQuick() {
