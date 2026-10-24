@@ -333,6 +333,7 @@
   </div>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('chemical')">Product Calculator</button>
+    <button class="tab-btn" onclick="switchTab('aceto')">CIPC Carrier</button>
     <button class="tab-btn" onclick="switchTab('stadium')">Archive/Stadium</button>
     <button class="tab-btn" onclick="switchTab('oxiphos')">Phos Acid</button>
   </div>
@@ -398,6 +399,65 @@
   </div>
 
   <!-- ====== STADIUM TAB ====== -->
+  <!-- ====== ACETO ACTIVATOR TAB ====== -->
+  <div class="tab-panel" id="tab-aceto">
+    <div class="card">
+      <div class="card-label">CIPC Carrier</div>
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Enter the CIPC for the job and the Activator rate. The calculator shows how much Activator to add.</p>
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:6px;display:block">CIPC for this job</label>
+        <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+          <input type="number" id="ac-cipc" value="100" step="10" min="0" inputmode="decimal"
+            style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:12px 14px;min-width:0;outline:none"
+            oninput="calcAceto()">
+          <span style="padding:0 14px;color:var(--text-muted);font-size:13px;white-space:nowrap">lb</span>
+        </div>
+      </div>
+      <div class="field">
+        <label style="font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:6px;display:block">Activator rate
+          <span style="font-size:12px;color:var(--accent);font-weight:600;display:block;margin-top:2px">Label rate: ¼ gal to 2 gal per 100 lb CIPC</span>
+        </label>
+        <div style="display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;overflow:hidden" id="ac-rate-field">
+          <input type="number" id="ac-rate" value="1" step="0.25" min="0" inputmode="decimal"
+            style="flex:1;background:transparent;border:none;color:var(--text);font-size:20px;font-weight:600;padding:12px 14px;min-width:0;outline:none"
+            oninput="calcAceto()">
+          <span style="padding:0 14px;color:var(--text-muted);font-size:13px;white-space:nowrap">gal / 100 lb CIPC</span>
+        </div>
+        <div id="ac-rate-warn" style="display:none;font-size:12px;color:var(--danger);font-weight:600;margin-top:6px">⚠ Outside the label rate range.</div>
+      </div>
+    </div>
+
+    <div class="result-card visible" id="ac-result">
+      <div class="result-label">Add This Much Activator</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px">Per lb CIPC</div>
+          <div style="font-size:26px;font-weight:700;color:var(--accent)" id="ac-per-lb">—</div>
+        </div>
+        <div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:8px;padding:14px;text-align:center">
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:4px">Per 10 lb bag</div>
+          <div style="font-size:26px;font-weight:700;color:var(--accent)" id="ac-per-bag">—</div>
+        </div>
+      </div>
+      <div class="result-rows">
+        <div class="result-row">
+          <span class="result-row-label">Total for this job</span>
+          <span class="result-row-value" id="ac-total">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">Total oz</span>
+          <span class="result-row-value" id="ac-total-oz">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row-label">Bags of CIPC</span>
+          <span class="result-row-value" id="ac-bags">—</span>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin-top:8px">128 oz = 1 gallon · Activator per lb = rate × 128 ÷ 100</p>
+  </div>
+
   <div class="tab-panel" id="tab-stadium">
 
     <div class="card">
@@ -826,17 +886,42 @@ const PRODUCTS = {
 
 // ── UI HELPERS ─────────────────────────────────────────────────────────────────
 
+function calcAceto() {
+  const cipc = Math.max(0, parseFloat(document.getElementById('ac-cipc').value) || 0);
+  const rate = Math.max(0, parseFloat(document.getElementById('ac-rate').value) || 0);
+  const outOfRange = document.getElementById('ac-rate').value !== '' && (rate < 0.25 || rate > 2);
+  document.getElementById('ac-rate-warn').style.display = outOfRange ? 'block' : 'none';
+  document.getElementById('ac-rate-field').style.borderColor = outOfRange ? 'var(--danger)' : '';
+
+  const ozLb = rate * 128 / 100;
+  const totalOz = ozLb * cipc;
+  const gal = totalOz / 128;
+  const bags = cipc / 10;
+
+  const fmt2 = n => n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmt1 = n => n.toLocaleString('en-US', {minimumFractionDigits:1, maximumFractionDigits:1});
+
+  document.getElementById('ac-per-lb').textContent   = fmt2(ozLb) + ' oz';
+  document.getElementById('ac-per-bag').textContent  = fmt1(ozLb * 10) + ' oz';
+  document.getElementById('ac-total').textContent    = fmt2(gal) + ' gal';
+  document.getElementById('ac-total-oz').textContent = fmt1(totalOz) + ' oz';
+  document.getElementById('ac-bags').textContent     = fmt1(bags) + ' bags';
+}
+
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => {
     b.classList.toggle('active',
       (i === 0 && tab==='chemical') ||
-      (i === 1 && tab==='stadium') ||
-      (i === 2 && tab==='oxiphos')
+      (i === 1 && tab==='aceto') ||
+      (i === 2 && tab==='stadium') ||
+      (i === 3 && tab==='oxiphos')
     );
   });
   document.getElementById('tab-chemical').classList.toggle('active', tab==='chemical');
+  document.getElementById('tab-aceto').classList.toggle('active', tab==='aceto');
   document.getElementById('tab-stadium').classList.toggle('active', tab==='stadium');
   document.getElementById('tab-oxiphos').classList.toggle('active', tab==='oxiphos');
+  if (tab === 'aceto') calcAceto();
 }
 
 function showError(id, msg) {
